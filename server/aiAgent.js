@@ -5,22 +5,22 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Ensure API key is set
+
 if (!process.env.MISTRAL_API_KEY) {
   throw new Error("MISTRAL_API_KEY is missing in .env file.");
 }
 
-// Initialize Mistral AI Model
+
 const model = new ChatMistralAI({
-  apiKey: process.env.MISTRAL_API_KEY, // ✅ Correct API key usage
-  modelName: "mistral-tiny", // Adjust model as needed (e.g., mistral-7b, mistral-large)
+  apiKey: process.env.MISTRAL_API_KEY, 
+  modelName: "mistral-tiny", 
 });
 
-// Setup Memory for Context Retention
+
 const memory = new BufferMemory();
 const chain = new ConversationChain({ llm: model, memory });
 
-// Generate Itinerary Based on User Input
+
 export async function generateItinerary(userInput) {
   try {
     const response = await chain.call({

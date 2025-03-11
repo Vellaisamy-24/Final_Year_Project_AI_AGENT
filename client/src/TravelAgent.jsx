@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import "./ChatBot.css"; // Import styles
 
 function TravelAgent() {
+  const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState("");
-  const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const chatEndRef = useRef(null);
 
-  async function handleAsk() {
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function handleSendMessage() {
+    if (!query.trim()) return;
     setLoading(true);
-    setError(null);
+
+    const userMessage = { sender: "user", text: query };
+    setMessages((prev) => [...prev, userMessage]); // Show user's query
 
     try {
       const res = await fetch("http://localhost:5000/ask", {
@@ -18,74 +26,77 @@ function TravelAgent() {
       });
 
       const data = await res.json();
-      console.log("API Response:", data); // Debugging step
+      console.log(data)
+      if (!res.ok || !data.data) throw new Error("Invalid response format.");
 
-      if (!res.ok || !data.data) {
-        throw new Error(data.message || "Invalid itinerary response format.");
-      }
+      const structuredResponse = parseStructuredResponse(data.data);
 
-      // Convert itinerary text to structured format
-      const structuredItinerary = parseItinerary(data.data);
-
-      if (!structuredItinerary.length) {
-        throw new Error("Could not parse itinerary. Please try again.");
-      }
-
-      setResponse(structuredItinerary);
-    } catch (err) {
-      setError(err.message);
-      setResponse(null);
+      const botMessage = { sender: "bot", text: structuredResponse };
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "Error: Unable to process your request." },
+      ]);
     } finally {
+      setQuery("");
       setLoading(false);
     }
   }
 
-  // Function to parse text response into structured format
-  function parseItinerary(text) {
-    const days = text.split(/Day \d+:/).slice(1); // Split on 'Day X:' and remove empty first element
-
+  function parseStructuredResponse(text) {
+    const days = text.split(/Day \d+:/).slice(1); // Splitting at "Day X:"
     return days.map((day, index) => {
-      const lines = day.trim().split("\n").filter(line => line); // Split into lines and remove empty ones
+      const lines = day.trim().split("\n").filter((line) => line); // Splitting into lines
       const title = lines.shift(); // First line is the title
-      const activities = lines.map(line => line.replace(/^- /, "")); // Remove leading '- '
+      const activities = lines.map((line) => line.replace(/^- /, "")); // Removing bullet points
 
-      return { title, activities };
+      return {
+        title: `Day ${index + 1}: ${title}`,
+        activities,
+      };
     });
   }
 
   return (
-    <div className="container">
-      <h1>AI Travel Agent</h1>
+    <div className="chat-container">
+      <h1>AI Travel Assistant</h1>
 
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Describe your tour plan..."
-      />
-      <button onClick={handleAsk} disabled={loading}>
-        {loading ? "Generating..." : "Generate Itinerary"}
-      </button>
-
-      {error && <p className="error">{error}</p>}
-
-      {response ? (
-        <div className="itinerary">
-          <h2>Itinerary</h2>
-          {response.map((day, index) => (
-            <div key={index} className="day">
-              <h3>Day {index + 1}: {day.title}</h3>
-              <ul>
-                {day.activities.map((activity, i) => (
-                  <li key={i}>{activity}</li>
+      <div className="chat-box">
+        {messages.map((msg, index) => (
+          <div key={index} className={`message ${msg.sender}`}>
+            {msg.sender === "bot" && Array.isArray(msg.text) ? (
+              <div className="structured-response">
+                {msg.text.map((day, i) => (
+                  <div key={i}>
+                    <h3>{day.title}</h3>
+                    <ul>
+                      {day.activities.map((activity, j) => (
+                        <li key={j}>{activity}</li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p>No itinerary available. Please try again.</p>
-      )}
+              </div>
+            ) : (
+              <span>{msg.text}</span>
+            )}
+          </div>
+        ))}
+        <div ref={chatEndRef} />
+      </div>
+
+      <div className="input-box">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Ask about your travel plan..."
+        />
+        <button onClick={handleSendMessage} disabled={loading}>
+          {loading ? "Thinking..." : "Send"}
+        </button>
+      </div>
     </div>
   );
 }
