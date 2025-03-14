@@ -4,6 +4,7 @@ import "./ChatBot.css"; // Import styles
 function TravelAgent() {
   const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState("");
+  const [budget, setBudget] = useState("");
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
 
@@ -15,28 +16,26 @@ function TravelAgent() {
     if (!query.trim()) return;
     setLoading(true);
 
-    const userMessage = { sender: "user", text: query };
-    setMessages((prev) => [...prev, userMessage]); // Show user's query
+    const userMessage = { sender: "user", text: `Query: ${query}${budget ? `, Budget: ${budget}` : ""}` };
+    setMessages((prev) => [...prev, userMessage]);
 
     try {
       const res = await fetch("http://localhost:5000/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, budget }),
       });
 
       const data = await res.json();
-      console.log(data)
-      if (!res.ok || !data.data) throw new Error("Invalid response format.");
+      if (!res.ok || !data?.data) throw new Error("Invalid response format.");
 
       const structuredResponse = parseStructuredResponse(data.data);
-
       const botMessage = { sender: "bot", text: structuredResponse };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "Error: Unable to process your request." },
+        { sender: "bot", text: "Error: Unable to process your request. Please try again." },
       ]);
     } finally {
       setQuery("");
@@ -44,18 +43,18 @@ function TravelAgent() {
     }
   }
 
-  function parseStructuredResponse(text) {
-    const days = text.split(/Day \d+:/).slice(1); // Splitting at "Day X:"
-    return days.map((day, index) => {
-      const lines = day.trim().split("\n").filter((line) => line); // Splitting into lines
-      const title = lines.shift(); // First line is the title
-      const activities = lines.map((line) => line.replace(/^- /, "")); // Removing bullet points
+  function parseStructuredResponse(data) {
+    const { itinerary, budgetPlan } = data;
 
-      return {
-        title: `Day ${index + 1}: ${title}`,
-        activities,
-      };
-    });
+    const parsedItinerary = itinerary?.split(/Day \d+:/).slice(1).map((day, index) => {
+      const [title, ...activities] = day.trim().split("\n").filter(Boolean);
+      return { title: `Day ${index + 1}: ${title}`, activities };
+    }) || [];
+
+    return [
+      ...parsedItinerary,
+      budgetPlan && { title: "Budget Plan", activities: [budgetPlan] },
+    ].filter(Boolean);
   }
 
   return (
@@ -92,6 +91,12 @@ function TravelAgent() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Ask about your travel plan..."
+        />
+        <input
+          type="text"
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
+          placeholder="Enter your budget (optional)"
         />
         <button onClick={handleSendMessage} disabled={loading}>
           {loading ? "Thinking..." : "Send"}
