@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "./App.css";
-
+const API_URL = import.meta.env.VITE_API_URL;
 // Main App Component
 const App = () => {
   // --------------------- STATE MANAGEMENT ---------------------
@@ -45,11 +45,15 @@ const App = () => {
 
     // Itinerary Section
     if (itinerary) {
-      responseText += `🌟 **Itinerary: ${itinerary.split("\n")[0].replace("Title: ", "")}**\n`;
+      responseText += `🌟 **Itinerary: ${itinerary
+        .split("\n")[0]
+        .replace("Title: ", "")}**\n`;
       const days = itinerary.split("\n\n"); // Split into days
       days.forEach((dayText) => {
         const lines = dayText.trim().split("\n");
-        const dayHeader = lines[0].replace("Day ", "**Day ").replace(":", ":**"); // Format day header
+        const dayHeader = lines[0]
+          .replace("Day ", "**Day ")
+          .replace(":", ":**"); // Format day header
         responseText += `\n${dayHeader}\n`;
         lines.slice(1).forEach((line) => {
           if (line.trim()) {
@@ -70,11 +74,15 @@ const App = () => {
 
     // Recommendations Section
     if (recommendations) {
-      responseText += `✨ **Recommendations: ${recommendations.split("\n")[0].replace("Title: ", "")}**\n`;
+      responseText += `✨ **Recommendations: ${recommendations
+        .split("\n")[0]
+        .replace("Title: ", "")}**\n`;
       const days = recommendations.split("\n\n"); // Split into days
       days.forEach((dayText) => {
         const lines = dayText.trim().split("\n");
-        const dayHeader = lines[0].replace("Day ", "**Day ").replace(":", ":**"); // Format day header
+        const dayHeader = lines[0]
+          .replace("Day ", "**Day ")
+          .replace(":", ":**"); // Format day header
         responseText += `\n${dayHeader}\n`;
         lines.slice(1).forEach((line) => {
           if (line.trim()) {
@@ -84,7 +92,10 @@ const App = () => {
       });
     }
 
-    return responseText || "Hmm, I couldn’t generate a plan. Could you clarify your request?";
+    return (
+      responseText ||
+      "Hmm, I couldn’t generate a plan. Could you clarify your request?"
+    );
   };
 
   // Reset chat to initial state
@@ -123,6 +134,7 @@ const App = () => {
 
     try {
       // Fetch response from backend
+      // const res = await axios.post(`${API_URL}/ask`, {
       const res = await axios.post("http://localhost:5000/ask", {
         query: query || input,
         budget,
@@ -137,12 +149,16 @@ const App = () => {
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
-      setError(err.response?.data?.error || "Oops! Something went wrong. Try again?");
+      setError(
+        err.response?.data?.error || "Oops! Something went wrong. Try again?"
+      );
       setMessages((prev) => [
         ...prev,
         {
           sender: "assistant",
-          text: `Error: ${err.response?.data?.error || "Failed to connect. Please retry!"}`,
+          text: `Error: ${
+            err.response?.data?.error || "Failed to connect. Please retry!"
+          }`,
           timestamp: new Date().toLocaleTimeString(),
         },
       ]);
@@ -157,7 +173,11 @@ const App = () => {
       {/* HEADER */}
       <header className="header">
         <h1>🌍 Travel Assistant Chat</h1>
-        <button className="reset-btn" onClick={resetChat} aria-label="Reset chat">
+        <button
+          className="reset-btn"
+          onClick={resetChat}
+          aria-label="Reset chat"
+        >
           🔄 Reset
         </button>
       </header>
@@ -165,7 +185,8 @@ const App = () => {
       {/* WELCOME BANNER */}
       <div className="welcome-banner">
         <p>
-          Plan your perfect trip! Type something like: "4-day trip to Ooty with ₹20000 budget, I like nature."
+          Plan your perfect trip! Type something like: "4-day trip to Ooty with
+          ₹20000 budget, I like nature."
         </p>
       </div>
 
@@ -174,7 +195,9 @@ const App = () => {
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`message ${msg.sender === "user" ? "user" : "assistant"}`}
+            className={`message ${
+              msg.sender === "user" ? "user" : "assistant"
+            }`}
           >
             <div className="message-content">
               <span className="message-text">{msg.text}</span>
