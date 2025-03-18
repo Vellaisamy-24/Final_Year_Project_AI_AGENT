@@ -134,8 +134,8 @@ const App = () => {
 
     try {
       // Fetch response from backend
-      // const res = await axios.post(`${API_URL}/ask`, {
-      const res = await axios.post("http://localhost:5000/ask", {
+      const res = await axios.post(`${API_URL}/ask`, {
+        // const res = await axios.post("http://localhost:5000/ask", {
         query: query || input,
         budget,
         preferences,
