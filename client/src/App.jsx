@@ -172,7 +172,7 @@ const App = () => {
     <div className="chat-app">
       {/* HEADER */}
       <header className="header">
-        <h1>🌍 Travel Assistant Chat</h1>
+        <h1>🌍 Travel Assistant</h1>
         <button
           className="reset-btn"
           onClick={resetChat}
@@ -186,7 +186,7 @@ const App = () => {
       <div className="welcome-banner">
         <p>
           Plan your perfect trip! Type something like: "4-day trip to Ooty with
-          ₹20000 budget, I like nature."
+          ₹20000 budget"
         </p>
       </div>
 
@@ -209,7 +209,7 @@ const App = () => {
         {loading && (
           <div className="message assistant">
             <div className="message-content">
-              ⏳ Planning your trip... <span className="spinner" />
+              ⏳Planning your Trip... <span className="spinner" />
             </div>
           </div>
         )}
@@ -225,7 +225,7 @@ const App = () => {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="e.g., 4-day trip to Ooty with ₹20000, I like nature"
+          placeholder="e.g., 4-day trip to Ooty with ₹20000"
           disabled={loading}
           aria-label="Enter your travel request"
         />
