@@ -6,15 +6,22 @@ import { travelWorkflow } from "./travelGraph.js";
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+import mongoose from "mongoose";
 
 // Middleware for request validation
 const validateRequest = (req, res, next) => {
   const { query, budget, preferences, agentType = "all" } = req.body;
   if (!query || typeof query !== "string") {
-    return res.status(400).json({ success: false, error: "Query must be a non-empty string." });
+    return res
+      .status(400)
+      .json({ success: false, error: "Query must be a non-empty string." });
   }
   if (!["all", "itinerary", "budget", "recommend"].includes(agentType)) {
-    return res.status(400).json({ success: false, error: "Invalid agentType. Use 'all', 'itinerary', 'budget', or 'recommend'." });
+    return res.status(400).json({
+      success: false,
+      error:
+        "Invalid agentType. Use 'all', 'itinerary', 'budget', or 'recommend'.",
+    });
   }
   req.validated = { query, budget, preferences, agentType };
   next();
@@ -52,11 +59,32 @@ app.post("/ask", validateRequest, async (req, res) => {
     }
 
     res.json({ success: true, data: response });
-    console.log("response " ,response )
+    console.log("response ", response);
   } catch (error) {
     res.status(500).json({ success: false, error: `Error: ${error.message}` });
   }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Travel Assistant with LangGraph running on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Travel Assistant with LangGraph running on port ${PORT}`)
+);
+
+//Backend
+import userRoute from "./routes/user.route.js";
+import queryRoute from "./routes/query.route.js";
+import queryRoutes from "./routes/query.route.js";
+import adminRoutes from "./routes/admin.route.js";
+mongoose
+  .connect(process.env.MONGODB_URL)
+  .then(() => {
+    console.log("Connected to DB");
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+app.use("/api", queryRoutes);
+
+app.use("/api/user", userRoute);
+app.use("/api/query", queryRoute);
+app.use("/api/admin", adminRoutes);
