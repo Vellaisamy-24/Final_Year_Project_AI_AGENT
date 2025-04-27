@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
-// import "./Profile.css"; // import the css file
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const user = useSelector((state) => state.user.currentUser);
@@ -14,6 +14,8 @@ const Profile = () => {
   const [postalCode, setPostalCode] = useState("");
   const [state, setState] = useState("");
   const [address, setAddress] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     handleProfile();
@@ -62,6 +64,27 @@ const Profile = () => {
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!window.confirm("Are you sure you want to delete your profile?"))
+      return;
+    try {
+      const response = await axios.delete(
+        "http://localhost:5000/api/user/deleteUser",
+        { email: user.email }
+      );
+      if (response.status === 200) {
+        toast.success("Profile deleted successfully");
+        // Clear localStorage/sessionStorage or Redux if needed
+        // localStorage.removeItem("token");
+        // Redirect to signin
+        navigate("/signin");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
     }
   };
 
@@ -141,7 +164,25 @@ const Profile = () => {
         <button type="submit" className="update-button">
           Update Profile
         </button>
+        <div
+          style={{
+            backgroundColor: "lightcoral",
+            color: "white",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            padding: "8px",
+            borderRadius: "5px  ",
+          }}
+          type="button"
+          onClick={handleDeleteProfile}
+          // className="delete-button"
+        >
+          Delete Profile
+        </div>
       </form>
+
+      {/* Delete Profile button */}
     </section>
   );
 };

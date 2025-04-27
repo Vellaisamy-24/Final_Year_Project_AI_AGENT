@@ -54,7 +54,10 @@ export const signIn = async (req, res, next) => {
       });
     }
     const token = jwt.sign({ id: userExists._id }, process.env.JWT_SECRET);
-    if (email == "vellaikarthick24@gmail.com" || "madhan01@gmail.com") {
+    if (
+      email == "vellaikarthick24@gmail.com" ||
+      email == "madhan01@gmail.com"
+    ) {
       return res.status(200).json({
         success: true,
         token: token,
@@ -136,5 +139,82 @@ export const updateUser = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const googleAuth = async (req, res) => {
+  console.log(req.body);
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (user) {
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+      const { password: pass, ...rest } = user._doc;
+      if (email == "vellaikarthick24@gmail.com" || "madhan01@gmail.com") {
+        return res.status(200).json({
+          success: true,
+          token: token,
+          user,
+          message: "Admin success",
+          admin: true,
+        });
+      }
+      return res.cookie("access_token", token, { httpOnly: true }).json({
+        success: true,
+        message: "Goolge Login Success",
+        user: rest,
+        token: token,
+        admin: false,
+      });
+    } else {
+      const generatePassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+      const hashedPassword = bcrypt.hashSync(generatePassword, 10);
+      const newUser = await User.create({
+        email: req.body.email,
+        userName: req.body.userName,
+        // profile: req.body.profile,
+        password: hashedPassword,
+      });
+      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+      const { password: pass, ...rest } = newUser._doc;
+      if (email == "vellaikarthick24@gmail.com" || "madhan01@gmail.com") {
+        return res.status(200).json({
+          success: true,
+          token: token,
+          user: newUser,
+          message: "Admin success",
+          admin: true,
+        });
+      }
+      return res.cookie("access_token", token).json({
+        success: true,
+        message: "google login for new User",
+        user: rest,
+        token: token,
+        admin: false,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.deleteOne({ email: email });
+    return res.status(200).json({
+      success: true,
+      message: "user deleted",
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

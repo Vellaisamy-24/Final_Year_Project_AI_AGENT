@@ -3,12 +3,12 @@ import User from "../models/user.model.js";
 export const getUser = async (req, res, next) => {
   try {
     const { email } = req.body;
-    if (email != "vellaikarthick24@gmail.com") {
-      return res.status(404).json({
-        success: false,
-        message: "Email not authurized",
-      });
-    }
+    // if (email != "vellaikarthick24@gmail.com") {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "Email not authurized",
+    //   });
+    // }
     const user = await User.find();
     return res.status(200).json({
       success: true,
@@ -38,6 +38,29 @@ export const getUserHistory = async (req, res, next) => {
       success: true,
       message: "user history fetched",
       userHistory,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getSingleUser = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (email != "vellaikarthick24@gmail.com") {
+      return res.status(404).json({
+        success: false,
+        message: "Email not authurized",
+      });
+    }
+    const user = await User.findOne({ email: email });
+    return res.status(200).json({
+      success: true,
+      message: "User list get",
+      user,
     });
   } catch (error) {
     return res.status(500).json({

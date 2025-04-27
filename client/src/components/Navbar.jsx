@@ -16,7 +16,7 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <div className="navbar-brand">AI AGENT</div>
+      <div className="navbar-brand">TRAVEL ASSISTANT</div>
       <ul className="navbar-links">
         {!user && (
           <>

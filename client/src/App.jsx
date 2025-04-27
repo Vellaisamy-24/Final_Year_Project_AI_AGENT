@@ -10,6 +10,7 @@ import Profile from "./components/Profile.jsx";
 import QueryHistory from "./components/QueryHistory.jsx";
 import Navbar from "./components/Navbar.jsx";
 import "./App.css";
+import UserProfile from "./components/Admin/UserProfile.jsx";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
           <Route path="/admin/getUser" element={<Users />} />
           <Route path="/user/profile" element={<Profile />} />
           <Route path="/user/queryHistory" element={<QueryHistory />} />
+          <Route path="/admin/userProfile/:email" element={<UserProfile />} />
         </Routes>
       </Router>
       {/* <AiAgent /> */}

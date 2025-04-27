@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { signIn } from "../store/Features/UserSlice";
 import "../App.css"; // Adjust the relative path as necessary
 import { useNavigate } from "react-router-dom";
+import OAuth from "./OAuth";
 // Import the custom CSS file
 
 const SignIn = () => {
@@ -95,6 +96,8 @@ const SignIn = () => {
             </button>
           </div>
         </form>
+        <hr style={{ margin: "10px", color: "black" }} />
+        <OAuth />
 
         <div className="signup-link">
           <p>

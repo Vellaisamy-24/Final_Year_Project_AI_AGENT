@@ -165,7 +165,7 @@ const QueryHistory = () => {
   return (
     <div className="chat-app">
       <header className="header">
-        <h1>💬 Query Assistant</h1>
+        <h1>💬 Query </h1>
       </header>
 
       <div className="chat-window">
